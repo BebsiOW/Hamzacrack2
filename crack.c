@@ -13,26 +13,39 @@ const int HASH_LEN = 33;        // Length of MD5 hash strings
 // Get this function working first!
 char * tryWord(char * plaintext, char * hashFilename)
 {
-    // Hash the plaintext
+    // Compute MD5 of plaintext into a 32 char hex string plus null
+    char targetHash[HASH_LEN];          // expects md5.h to fill a hex string
+    md5(plaintext, targetHash);
 
-    // Open the hash file
+    // Open the file containing hashes
+    FILE *fp = fopen(hashFilename, "r");
+    if (!fp)
+        return NULL;
 
-    // Loop through the hash file, one line at a time.
+    // Read each line and compare to our target hash
+    char line[HASH_LEN + 8];            // room for newline chars
+    while (fgets(line, sizeof(line), fp))
+    {
+        // Strip trailing newline
+        line[strcspn(line, "\r\n")] = '\0';
 
-    // Attempt to match the hash from the file to the
-    // hash of the plaintext.
+        // Only compare if the line looks like a full MD5 hex string
+        if (strlen(line) == HASH_LEN - 1 && strcmp(line, targetHash) == 0)
+        {
+            fclose(fp);
+            // Return a heap copy of the matching hash
+            char *found = malloc(HASH_LEN);
+            if (!found) return NULL;
+            strcpy(found, line);
+            return found;
+        }
+    }
 
-    // If there is a match, you'll return the hash.
-    // If not, return NULL.
-
-    // Before returning, do any needed cleanup:
-    //   Close files?
-    //   Free memory?
-
-    // Modify this line so it returns the hash
-    // that was found, or NULL if not found.
-    return "0123456789abcdef0123456789abcdef";
+    // No match found
+    fclose(fp);
+    return NULL;
 }
+
 
 
 int main(int argc, char *argv[])
