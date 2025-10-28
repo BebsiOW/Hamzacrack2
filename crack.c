@@ -13,36 +13,55 @@ const int HASH_LEN = 33;        // Length of MD5 hash strings
 // Get this function working first!
 char * tryWord(char * plaintext, char * hashFilename)
 {
-    // Compute MD5 of plaintext into a 32 char hex string plus null
-    char targetHash[HASH_LEN];          // expects md5.h to fill a hex string
-    md5(plaintext, targetHash);
+    // Hash the plaintext
 
-    // Open the file containing hashes
-    FILE *fp = fopen(hashFilename, "r");
-    if (!fp)
-        return NULL;
+    char *string = md5(plaintext, strlen(plaintext));
 
-    // Read each line and compare to our target hash
-    char line[HASH_LEN + 8];            // room for newline chars
-    while (fgets(line, sizeof(line), fp))
+    // Open the hash file
+
+    FILE *note = fopen(hashFilename, "r");
+    if(!note)
     {
-        // Strip trailing newline
-        line[strcspn(line, "\r\n")] = '\0';
-
-        // Only compare if the line looks like a full MD5 hex string
-        if (strlen(line) == HASH_LEN - 1 && strcmp(line, targetHash) == 0)
-        {
-            fclose(fp);
-            // Return a heap copy of the matching hash
-            char *found = malloc(HASH_LEN);
-            if (!found) return NULL;
-            strcpy(found, line);
-            return found;
-        }
+        
+        printf("Unable to open %s\n", note);
+        exit(1);
     }
 
-    // No match found
-    fclose(fp);
+    // Loop through the hash file, one line at a time.
+
+    char line[1000];
+    while(fgets(line, 1000, note) != NULL)
+    {
+        char *nl = strchr(line, '\n');
+        if (nl != NULL) *nl = '\0';
+        
+        int length = strlen(line);
+        char *hash = md5(line, length);
+    }
+
+    // Attempt to match the hash from the file to the
+    // hash of the plaintext.
+
+    // If there is a match, you'll return the hash.
+    // If not, return NULL.
+
+    int equal = strcmp(hash, string);
+    if(equal = 0)
+        {
+            fclose(note);
+            return string;
+        }
+
+    // Before returning, do any needed cleanup:
+    //   Close files?
+    //   Free memory?
+
+    free(hash);
+
+    // Modify this line so it returns the hash
+    // that was found, or NULL if not found.
+
+    fclose(note);
     return NULL;
 }
 
